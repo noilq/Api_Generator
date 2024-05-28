@@ -29,7 +29,9 @@ def create_database(host, user, password, database_name, sql_code):
     if connection.is_connected():
         cursor = connection.cursor()
         #create db
-        cursor.execute(sql_code, multi=True)  
+        cursor.execute(f"USE {database_name}")
+        cursor.execute(sql_code, multi=True)
+
         print(f'Database "{database_name}" successfully created.')
         cursor.close()
         connection.close()
@@ -90,8 +92,7 @@ def format_sql_code(database_name, sql_code_body):
     """
     sql_code_base = f"""
     DROP DATABASE IF EXISTS {database_name};
-    CREATE DATABASE IF NOT EXISTS {database_name};
-    USE {database_name};    
+    CREATE DATABASE IF NOT EXISTS {database_name};    
     """
 
     sql_code_body = [line for line in sql_code_body.strip().split('\n') if not line.strip().startswith(("CREATE DATABASE", "USE"))]
@@ -105,9 +106,7 @@ password = ''
 database_name = 'newdb'
 
 sql_code_body = """
-CREATE DATABASE BlogPlatform;
 
-USE BlogPlatform;
 
 -- Create Users table
 CREATE TABLE Users (

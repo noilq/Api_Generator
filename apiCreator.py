@@ -45,13 +45,13 @@ def load_pydantic_models(pydantic_script) -> List[BaseModel]:
 def create(model):
     #Route + function
     string = f"""@app.post("/{model.__name__}/") \nasync def create_{model.__name__}({model.__name__}: {model.__name__}):\n"""
+
     #Comments
     string += f"""\t'''\n\tCreate {model.__name__} \n\tArgument: \n\t\t{model.__name__}: {model.__name__}: An object, representing model.\n\t'''\n"""
+
     #Function body
+    #SQL query
     string += f"""\n"""
-
-
-    #print(string)
 
     return string
 
@@ -73,10 +73,28 @@ def read(model):
 
     string += """):\n"""
 
+    #Check for all variables
+    variables = []
+    variables_names = []
+    for field_name, field_type in model.__annotations__.items():
+        if field_name != primary_key_name:
+            type_name = field_type.__name__
+            variables.append(f"{field_name}: {type_name}")
+            variables_names.append(field_name)
+    
     #Comments
     string += f"""\t'''\n\tReturn {model.__name__} \n\tArgument: \n\t\t{primary_key_name}: int: Model id.\n\t'''\n\n"""
 
-    #print(string)
+    #Function body
+    #SQL query
+    string += f"""\tif {primary_key_name} == None: \n\t\tquery = 'SELECT {', '.join(variables_names)} FROM {model.__name__}'"""
+    string += f"""\n\telse:\n\t\tquery = f'SELECT {', '.join(variables_names)} FROM {model.__name__} WHERE {primary_key_name} = """
+    string += "{"
+    string += f"{primary_key_name}"
+    string += "}'"
+    string += f"""\n\tresult = execute_query(query)\n\n\t"""
+    string += """if result:\n\t\treturn {'data': result}\n\telse:\n\t\t"""
+    string += """raise HTTPException(status_code=404, detail='Data not found')\n\n"""
 
     return string
 
@@ -108,7 +126,9 @@ def update(model):
     #Comments
     string += f"""\t'''\n\tEdit {model.__name__} \n\tArgument: \n\t\t{',\n\t\t'.join(variables)}.\n\t'''\n\n"""
 
-    #print(string)
+    #Function body
+    #SQL query
+    string += f"""\n"""
 
     return string
     
@@ -133,6 +153,8 @@ def delete(model):
     #Comments
     string += f"""\t'''\n\tDeactivate {model.__name__} \n\tArgument: \n\t\t{primary_key_name}: int: Model id.\n\t'''\n\n"""
 
-    #print(string)
+    #Function body
+    #SQL query
+    string += f"""\n"""
 
     return string
