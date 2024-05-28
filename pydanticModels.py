@@ -21,6 +21,8 @@ from decimal import Decimal\n"""
             return "Decimal"
         elif "text" in mysql_type:
             return "str"
+        elif "char" in mysql_type:
+            return "chr"
         else:
             return mysql_type
 

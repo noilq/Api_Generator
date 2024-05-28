@@ -80,7 +80,7 @@ def read(model):
 
 def update(model):
     #Get Primary Key
-    primary_key_name = None
+    primary_key_name = ''
     for field_name, field in model.__fields__.items():
         if field.json_schema_extra == {'primary_key': True}:
             primary_key_name = field_name
@@ -90,14 +90,13 @@ def update(model):
     if primary_key_name is not None:
         primary_key_name_str = '{' + primary_key_name + '}'
         string = f"""@app.put("/{model.__name__}/{primary_key_name_str}") \nasync def update_{model.__name__}("""
-        string += f"""{primary_key_name}: int, """  
     else: 
         string = f"""@app.put("/{model.__name__}/None") \nasync def update_{model.__name__}("""
     
     #Check for all variables
     variables = []
     for field_name, field_type in model.__annotations__.items():
-        if field_name != primary_key_name_str and field_name != primary_key_name:
+        if field_name != primary_key_name:
             type_name = field_type.__name__
             variables.append(f"{field_name}: {type_name}")
 
@@ -106,7 +105,6 @@ def update(model):
 
     #Comments
     string += f"""\t'''\n\tEdit {model.__name__} \n\tArgument: \n\t\t{',\n\t\t'.join(variables)}.\n\t'''\n\n"""
-
 
     #print(string)
 
@@ -128,7 +126,10 @@ def delete(model):
     else: 
         string = f"""@app.delete("/{model.__name__}/None") \nasync def delete_{model.__name__}("""
 
-    string += """):\n\n"""
+    string += """):\n"""
+
+    #Comments
+    string += f"""\t'''\n\tDeactivate {model.__name__} \n\tArgument: \n\t\t{primary_key_name}: int: Model id.\n\t'''\n\n"""
 
     #print(string)
 
