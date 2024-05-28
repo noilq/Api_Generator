@@ -8,7 +8,12 @@ def create_api(pydantic_script):
 
     models_names = ", ".join([model.__name__ for model in models])
 
-    script = f"""from fastapi import FastAPI, HTTPException\nfrom datetime import datetime, timedelta\nfrom decimal import Decimal\nfrom {pydantic_script} import {models_names}\napp = FastAPI()\n\n"""
+    #import
+    script = f"""from fastapi import FastAPI, HTTPException\nfrom datetime import datetime, timedelta\nfrom decimal import Decimal\nfrom {pydantic_script} import {models_names}\nimport mysql.connector\napp = FastAPI()\n\n"""
+    #db params
+    script += """db_config = {\n\t'host': 'localhost',\n\t'user': 'root',\n\t'password': '',\n\t'database': 'newdb'\n}\n\n"""
+    #sql query function
+    script += """def execute_query(query, params=None):\n\ttry:\n\t\tconnection = mysql.connector.connect(**db_config)\n\t\tcursor = connection.cursor()\n\n\t\tif params:\n\t\t\tcursor.execute(query, params)\n\t\telse:\n\t\t\tcursor.execute(query)\n\n\t\tresult = cursor.fetchall()\n\n\t\tcursor.close()\n\t\tconnection.commit()\n\t\tconnection.close()\n\n\t\treturn result\n\n\texcept mysql.connector.Error as err:\n\t\traise HTTPException(status_code=500, detail=f"Database error: {err}")\n\n"""
 
     for model in models:
         script += create(model)
@@ -45,9 +50,6 @@ def create(model):
     #Function body
     string += f"""\n"""
 
-    #for field_name, field_type in model.__annotations__.items():
-    #    type_name = field_type.__name__
-    #    string += f"""{field_name}: {type_name}, """
 
     #print(string)
 
