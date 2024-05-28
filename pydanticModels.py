@@ -14,17 +14,65 @@ from decimal import Decimal\n"""
     #MYSQL types -> python types
     def convert_mysql_type(mysql_type):
         if "varchar" in mysql_type:
-            return "str"
-        elif "timestamp" in mysql_type:
-            return "datetime"
-        elif "decimal" in mysql_type:
-            return "Decimal"
-        elif "text" in mysql_type:
-            return "str"
-        elif "char" in mysql_type:
-            return "chr"
-        else:
-            return mysql_type
+        return "str"
+    elif "timestamp" in mysql_type:
+        return "datetime"
+    elif "decimal" in mysql_type:
+        return "Decimal"
+    elif "text" in mysql_type:
+        return "str"
+    elif "char" in mysql_type:
+        return "str"
+    elif "tinyint" in mysql_type:
+        return "int"
+    elif "smallint" in mysql_type:
+        return "int"
+    elif "mediumint" in mysql_type:
+        return "int"
+    elif "int" in mysql_type:
+        return "int"
+    elif "bigint" in mysql_type:
+        return "int"
+    elif "float" in mysql_type:
+        return "float"
+    elif "double" in mysql_type:
+        return "float"
+    elif "bit" in mysql_type:
+        return "int"
+    elif "date" in mysql_type:
+        return "date"
+    elif "time" in mysql_type:
+        return "time"
+    elif "datetime" in mysql_type:
+        return "datetime"
+    elif "year" in mysql_type:
+        return "int"
+    elif "enum" in mysql_type:
+        return "str"
+    elif "set" in mysql_type:
+        return "set"
+    elif "binary" in mysql_type:
+        return "bytes"
+    elif "varbinary" in mysql_type:
+        return "bytes"
+    elif "blob" in mysql_type:
+        return "bytes"
+    elif "tinyblob" in mysql_type:
+        return "bytes"
+    elif "mediumblob" in mysql_type:
+        return "bytes"
+    elif "longblob" in mysql_type:
+        return "bytes"
+    elif "tinytext" in mysql_type:
+        return "str"
+    elif "mediumtext" in mysql_type:
+        return "str"
+    elif "longtext" in mysql_type:
+        return "str"
+    else:
+        return mysql_type
+        
+
 
     #Convert into pydantic-like models
     for key, value in data.items():
