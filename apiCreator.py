@@ -5,8 +5,10 @@ from typing import List
 
 def create_api(pydantic_script):
     models = load_pydantic_models(pydantic_script)
-    
-    script = """from fastapi import FastAPI, HTTPException\nfrom datetime import datetime, timedelta\nfrom decimal import Decimal\n \napp = FastAPI()\n\n"""
+
+    models_names = ", ".join([model.__name__ for model in models])
+
+    script = f"""from fastapi import FastAPI, HTTPException\nfrom datetime import datetime, timedelta\nfrom decimal import Decimal\nfrom {pydantic_script} import {models_names}\napp = FastAPI()\n\n"""
 
     for model in models:
         script += create(model)
@@ -36,13 +38,17 @@ def load_pydantic_models(pydantic_script) -> List[BaseModel]:
     return models
 
 def create(model):
-    string = f"""@app.post("/{model.__name__}/") \nasync def create_{model.__name__}("""
-    for field_name, field_type in model.__annotations__.items():
-        type_name = field_type.__name__
-        string += f"""{field_name}: {type_name}, """
-    string = string[:-2]
-    string += """):\n\n"""
-    
+    #Route + function
+    string = f"""@app.post("/{model.__name__}/") \nasync def create_{model.__name__}({model.__name__}: {model.__name__}):\n"""
+    #Comments
+    string += f"""\t'''\n\tCreate {model.__name__} \n\tArgument: \n\t\t{model.__name__}: {model.__name__}: An object, representing model.\n\t'''\n"""
+    #Function body
+    string += f"""\n"""
+
+    #for field_name, field_type in model.__annotations__.items():
+    #    type_name = field_type.__name__
+    #    string += f"""{field_name}: {type_name}, """
+
     #print(string)
 
     return string
@@ -59,11 +65,14 @@ def read(model):
     if primary_key_name is not None:
         primary_key_name_str = '{' + primary_key_name + '}'
         string = f"""@app.get("/{model.__name__}/{primary_key_name_str}") \nasync def read_{model.__name__}("""
-        string += f"""{primary_key_name}: int"""  
+        string += f"""{primary_key_name}: int = None"""  
     else: 
         string = f"""@app.get("/{model.__name__}/None") \nasync def read_{model.__name__}("""
 
-    string += """):\n\n"""
+    string += """):\n"""
+
+    #Comments
+    string += f"""\t'''\n\tReturn {model.__name__} \n\tArgument: \n\t\t{primary_key_name}: int: Model id.\n\t'''\n\n"""
 
     #print(string)
 
@@ -86,12 +95,18 @@ def update(model):
         string = f"""@app.put("/{model.__name__}/None") \nasync def update_{model.__name__}("""
     
     #Check for all variables
+    variables = []
     for field_name, field_type in model.__annotations__.items():
         if field_name != primary_key_name_str and field_name != primary_key_name:
             type_name = field_type.__name__
-            string += f"""{field_name}: {type_name}, """
-    string = string[:-2]
-    string += """):\n\n"""
+            variables.append(f"{field_name}: {type_name}")
+
+    string += ", ".join(variables)
+    string += """):\n"""
+
+    #Comments
+    string += f"""\t'''\n\tEdit {model.__name__} \n\tArgument: \n\t\t{',\n\t\t'.join(variables)}.\n\t'''\n\n"""
+
 
     #print(string)
 
