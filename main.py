@@ -199,11 +199,13 @@ CREATE TABLE ServiceRecords (
 def main(host, user, password, database_name, sql_code_body):
     #db creation
     sql_code = format_sql_code(database_name, sql_code_body)
+    
     create_database(host, user, password, database_name, sql_code)
 
     #get db info + format into json
     db_info, depth = get_database_info(host, user, password, database_name)
     db_info_json = json.dumps(db_info, indent=depth)
+    print(sql_code)
     #print(db_info_json)
 
     pydantic_script = process_models(db_info_json, database_name)

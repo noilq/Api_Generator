@@ -20,7 +20,7 @@ def create_api(pydantic_script):
     script = """from fastapi import FastAPI, HTTPException\n"""
     script += """from datetime import datetime, timedelta\n"""
     script += """from decimal import Decimal\n"""
-    script += f"""from {pydantic_script} import {models_names}\n"""
+    script += f"""from {pydantic_script[:-3]} import {models_names}\n"""
     script += """import mysql.connector\napp = FastAPI()\n\n"""
     #db params
     script += """db_config = {\n"""
@@ -227,12 +227,16 @@ def update(model):
     
     #Check for all variables
     variables = []
+    variables_names = []
+    variables_formated = []
     for field_name, field_type in model.__annotations__.items():
         if field_name != primary_key_name:
             type_name = field_type.__name__
             variables.append(f"{field_name}: {type_name}")
+            variables_names.append(field_name)
+            variables_formated.append(field_name + ' = %s')
 
-    string += f"""{", ".join(variables)}"""
+    string += f"""{primary_key_name}, {", ".join(variables)}"""
     string += """):\n"""
 
     #Comments
@@ -247,33 +251,20 @@ def update(model):
     string += """\ttry:\n"""
     string += f"""\t\t{model.__name__}_exists_query = 'SELECT * FROM {model.__name__} WHERE {primary_key_name} = %s'\n"""
     string += f"""\t\t{model.__name__}_exists_params = ({primary_key_name})\n"""
-    string += f"""\t\t{model.__name__}_exists_result = exceture_query({model.__name__}_exists_query, {model.__name__}_exists_params)\n\n"""
-    string += f"""\t\tif no {model.__name__}_exists_result:\n"""
+    string += f"""\t\t{model.__name__}_exists_result = execute_query({model.__name__}_exists_query, {model.__name__}_exists_params)\n\n"""
+    string += f"""\t\tif {model.__name__}_exists_result == False:\n"""
     string += f"""\t\t\traise HTTPException(status_code=404, defail=f"{model.__name__} with ID {primary_key_name} not found")\n\n"""
-    string += f"""\t\tupdate_query = '''"""
-    """
-    try:
-        car_exists_query = "SELECT * FROM Cars WHERE CarID = %s"
-        car_exists_params = (CarID,)
-        car_exists_result = execute_query(car_exists_query, car_exists_params)
-
-        if not car_exists_result:
-            raise HTTPException(status_code=404, detail=f"Car with ID {CarID} not found")
-
-        update_query = '''
-        UPDATE Cars
-        SET ModelID = %s, DealershipID = %s, VIN = %s, Price = %s, Status = %s
-        WHERE CarID = %s
-        '''
-        update_params = (ModelID, DealershipID, VIN, Price, Status, CarID)
-        execute_query(update_query, update_params)
-
-        # Формируем JSON-ответ
-        return {"message": f"Car with ID {CarID} successfully updated"}
-
-    except mysql.connector.Error as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    """
+    string += """\t\tupdate_query = '''\n"""
+    string += f"""\t\tIPDATE {model.__name__}\n"""
+    string += f"""\t\tSET {', '.join(variables_formated)}\n"""
+    string += f"""\t\tWHERE {primary_key_name} = %s\n"""
+    string += """\t\t'''\n\n"""
+    string += f"""\t\tupdate_params = ({', '.join(variables_names)})\n"""
+    string += """\t\texecute_query(update_query, update_params)\n\n"""
+    string += f"""\t\treturn {{"message": f"{model.__name__} with ID {primary_key_name} successfully updated"}}\n"""
+    string += """\texcept mysql.connector.Error as e:\n"""
+    string += """\t\traise HTTPException(status_code=500, dateil=str(e))\n"""
+    
     string += f"""\n"""
 
     return string
