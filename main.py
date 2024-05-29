@@ -53,7 +53,7 @@ def create_database(host, user, password, database_name, sql_code):
 def get_database_info(host, user, password, database_name):
     """
     Returns information about all tables in database.
-
+    Also adds new "Active" field for each table.
     Arguments:
         `host` (str): Db host.
         `user` (str): Db user.
@@ -79,9 +79,13 @@ def get_database_info(host, user, password, database_name):
     table_descriptions = {}
     
     for (table_name,) in tables:
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {table_name}_IsActive BOOLEAN DEFAULT TRUE")
+
         cursor.execute(f"DESCRIBE {table_name}")
         description = cursor.fetchall()
         table_descriptions[table_name] = description
+
+        #cursor.execute()
 
     cursor.close()
     connection.close()
@@ -100,17 +104,11 @@ def format_sql_code(database_name, sql_code_body):
     Returns:
         Str: Formated sql code.
     """
-    sql_code_base = f"""
-    """
-    #sql_code_base = f"""
-    #DROP DATABASE IF EXISTS {database_name};
-    #CREATE DATABASE IF NOT EXISTS {database_name};    
-    #"""
-
-    sql_code_body = [line for line in sql_code_body.strip().split('\n') if not line.strip().startswith(("CREATE DATABASE", "USE"))]
-    sql_code_body = '\n'.join(sql_code_body)
+    if any(line.strip().startswith(("CREATE DATABASE", "USE")) for line in sql_code_body.strip().split('\n')):
+        sql_code_body = [line for line in sql_code_body.strip().split('\n') if not line.strip().startswith(("CREATE DATABASE", "USE"))]
+        sql_code_body = '\n'.join(sql_code_body)
     
-    return sql_code_base + sql_code_body
+    return sql_code_body
 
 host = 'localhost'
 user = 'root'
@@ -118,13 +116,6 @@ password = ''
 database_name = 'newdb'
 
 sql_code_body = """
-
-
--- Create the database
-CREATE DATABASE CarIndustryDB;
-
--- Switch to the new database
-USE CarIndustryDB;
 
 -- Create the Manufacturers table
 CREATE TABLE Manufacturers (
@@ -192,20 +183,19 @@ CREATE TABLE ServiceRecords (
     Description TEXT NOT NULL,
     Cost DECIMAL(10, 2),
     FOREIGN KEY (CarID) REFERENCES Cars(CarID)
-);
+);  
 
 """
 
 def main(host, user, password, database_name, sql_code_body):
     #db creation
-    sql_code = format_sql_code(database_name, sql_code_body)
+    sql_code = sql_code_body #format_sql_code(database_name, sql_code_body)
     
     create_database(host, user, password, database_name, sql_code)
-
     #get db info + format into json
     db_info, depth = get_database_info(host, user, password, database_name)
     db_info_json = json.dumps(db_info, indent=depth)
-    print(sql_code)
+    
     #print(db_info_json)
 
     pydantic_script = process_models(db_info_json, database_name)
