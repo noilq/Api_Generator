@@ -185,7 +185,7 @@ def read(model):
 
     #Function body
     #SQL query
-    string += f"""\tif {primary_key_name} == None: \n"""
+    string += f"""\tif not {primary_key_name}: \n"""
     string += f"""\t\tquery = 'SELECT {', '.join(variables_names)} FROM {model.__name__}'\n"""
     string += f"""\telse:\n"""
     string += f"""\t\tquery = f'SELECT {', '.join(variables_names)} FROM {model.__name__} WHERE {primary_key_name} = """
@@ -193,6 +193,7 @@ def read(model):
     string += f"{primary_key_name}"
     string += "}'\n"
     string += """\tresult = execute_query(query)\n\n"""
+    string += """\t#check if deleted\n\tfiltered_result = [record for record in result if record['IsActive']]\n\n"""
     string += """\tif result:\n"""
     string += """\t\treturn {'data': result}\n""" 
     string += """\telse:\n"""
@@ -254,6 +255,8 @@ def update(model):
     string += f"""\t\t{model.__name__}_exists_result = execute_query({model.__name__}_exists_query, {model.__name__}_exists_params)\n\n"""
     string += f"""\t\tif {model.__name__}_exists_result == False:\n"""
     string += f"""\t\t\traise HTTPException(status_code=404, defail=f"{model.__name__} with ID {primary_key_name} not found")\n\n"""
+    string += f"""\t\tif {model.__name__}_exists_result[0]['IsActive'] == 0:\n"""
+    string += f"""\t\t\traise HTTPException(status_code=403, detail="Cannot update inactive records")\n\n"""
     string += """\t\tupdate_query = '''\n"""
     string += f"""\t\tIPDATE {model.__name__}\n"""
     string += f"""\t\tSET {', '.join(variables_formated)}\n"""
@@ -306,6 +309,43 @@ def delete(model):
 
     #Function body
     #SQL query
-    string += f"""\n"""
+    string += """\ttry:\n"""
+    string += f"""\t\t{model.__name__}_exists_query = 'SELECT IsActive FROM {model.__name__} WHERE {primary_key_name} = %s'\n"""
+    string += f"""\t\t{model.__name__}_exists_params = ({primary_key_name},)\n"""
+    string += f"""\t\t{model.__name__}_exists_result = execute_query({model.__name__}_exists_query, {model.__name__}_exists_params)\n\n"""
+    string += f"""\t\tif not {model.__name__}_exists_result:\n"""
+    string += f"""\t\t\traise HTTPException(status_code=404, detail=f"{model.__name__} with ID {primary_key_name} not found")\n\n"""
+    string += f"""\t\tif {model.__name__}_exists_result[0]['IsActive'] == 0:\n"""
+    string += f"""\t\t\treturn {{"message": f"{model.__name__} with ID {primary_key_name} is already inactive"}}\n\n"""
+    string += f"""\t\tupdate_query = 'UPDATE {model.__name__} SET IsActive = 0 WHERE {primary_key_name} = %s'\n"""
+    string += f"""\t\tupdate_params = ({primary_key_name},)\n"""
+    string += """\t\texecute_query(update_query, update_params)\n\n"""
+    string += f"""\t\treturn {{"message": f"{model.__name__} with ID {primary_key_name} successfully deactivated"}}\n"""
+    string += """\texcept mysql.connector.Error as e:\n"""
+    string += """\t\traise HTTPException(status_code=500, detail=str(e))\n"""
+    string += """\n"""
 
     return string
+"""
+try:
+        # Check if the car exists and its IsActive status
+        car_exists_query = 'SELECT IsActive FROM cars WHERE CarID = %s'
+        car_exists_params = (CarID,)
+        car_exists_result = execute_query(car_exists_query, car_exists_params)
+
+        if not car_exists_result:
+            raise HTTPException(status_code=404, detail=f"Car with ID {CarID} not found")
+
+        if car_exists_result[0]['IsActive'] == 0:
+            return {"message": f"Car with ID {CarID} is already inactive"}
+
+        # Update the car to set IsActive to false
+        update_query = 'UPDATE cars SET IsActive = 0 WHERE CarID = %s'
+        update_params = (CarID,)
+        execute_query(update_query, update_params)
+
+        return {"message": f"Car with ID {CarID} successfully deactivated"}
+    except mysql.connector.Error as e:
+        raise HTTPException(status_code=500, detail=str(e))
+"""
+    
