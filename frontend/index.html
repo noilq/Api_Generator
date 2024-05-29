@@ -40,16 +40,22 @@
                 <input type="submit" value="Send SQL file" class="btn btn-primary">
             </form>
         </div>
-        <div class="row">
-            <div class="col info-block">
-                <h3 class="header">API block</h3>
-                <p id="api_code"></p>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col container-sm-6 container-md-6 container-lg-6 container-xl-6">
+                    <div class="info-block">
+                        <h3 class="header">Database info</h3>
+                        <p id="db_info"></p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="info-block">
+                        <h3 class="header">API block</h3>
+                        <pre id="api_code"></pre>
+                    </div>
+                </div>
             </div>
-            <div class="col info-block">
-                <h3 class="header">Database info</h3>
-                <p id="db_info"></p>
-            </div>
-        </div>
+        </div>        
     </div>
     <!-- Link to your custom JavaScript file -->
     <script src="index.js"></script>

@@ -6,10 +6,31 @@ from main import get_database_info, host, user, password, database_name, main, c
 
 app = Flask(__name__)
 
+def list_to_string(items):
+    """
+    Converts a list of items into a string with each item separated by a newline.
+
+    Arguments:
+    items (list): The list of items to be converted.
+
+    Returns:
+    str: A string with each item separated by a newline.
+    """
+    result = ""
+    for item in items:
+        result += item
+        result += "\n"
+    return result
+
 @app.route('/sql_code', methods=['POST'])
 def sql_code():
-    given_sql_code = request.json.sql_code
+    given_sql_code_ = request.json
+    given_sql_code = given_sql_code_['sql_code']
+
+    print("OCHKO 1_")
     print(given_sql_code)
+    print("OCHKO 2_")
+
     if given_sql_code is None:
         return jsonify({"error": "No JSON data provided"}), 400
 
@@ -41,6 +62,7 @@ def sql_code():
 
     # Return a JSON response
     return jsonify({"sql_code": given_sql_code, "api": api, "db_info": db_info}), 200
+    #return jsonify({"sql_code": given_sql_code, "api": api, "db_info": list_to_string(db_info[0])}), 200
 
 @app.route('/', methods=['GET'])
 def default_endpoint():

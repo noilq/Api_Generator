@@ -37,9 +37,22 @@ $(document).ready(function() {
             success: function(response) {
                 console.log("File sent successfully");
                 console.log(response);
-                console.log(response.sql_code.sql_code);
+                console.log(response.sql_code);
                 api_code_text.text(response.api);
-                db_info_text.text(JSON.stringify(response.db_info));
+                var db_info_ = "";
+                var tables_names = Object.keys(response.db_info[0]);
+                var tables_data= Object.values(response.db_info[0]);
+                for (let index = 0; index < tables_data.length; index++) {
+                    var properties = "";
+                    tables_data[index].forEach(element => {
+                        properties += `<p>${element[0]}, ${element[1]}, ${element[3]}, ${element[3] == "" ? "": "AUTO_INCREMENT"}</p>`;
+                    });
+                    const element = `<p><b>${tables_names[index]}</b></p><p>${properties}</p><br>`;
+                    db_info_ += element;
+                }
+                db_info_text.append(`<h4>Tables count: ${response.db_info[1]}</h4>`);
+                db_info_text.append(db_info_);
+                console.log(response.db_info);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error("Error sending file:", textStatus, errorThrown);
