@@ -25,12 +25,22 @@ def create_database(host, user, password, database_name, sql_code):
         user=user,
         password=password
         )
-
+    
     if connection.is_connected():
         cursor = connection.cursor()
+
         #create db
+        cursor.execute(f"DROP DATABASE IF EXISTS {database_name}")
+        cursor.execute(f"CREATE DATABASE {database_name}")
         cursor.execute(f"USE {database_name}")
-        cursor.execute(sql_code, multi=True)
+
+        #instead of multi=True execute each command one by one
+        sql_commands = sql_code.strip().split(';')
+        for command in sql_commands:
+            if command.strip():
+                cursor.execute(command + ';')
+        #cursor.execute(sql_code, multi=True)
+        #cursor.execute(f"USE {database_name}")
 
         print(f'Database "{database_name}" successfully created.')
         cursor.close()
@@ -91,13 +101,15 @@ def format_sql_code(database_name, sql_code_body):
         Str: Formated sql code.
     """
     sql_code_base = f"""
-    DROP DATABASE IF EXISTS {database_name};
-    CREATE DATABASE IF NOT EXISTS {database_name};    
     """
+    #sql_code_base = f"""
+    #DROP DATABASE IF EXISTS {database_name};
+    #CREATE DATABASE IF NOT EXISTS {database_name};    
+    #"""
 
     sql_code_body = [line for line in sql_code_body.strip().split('\n') if not line.strip().startswith(("CREATE DATABASE", "USE"))]
     sql_code_body = '\n'.join(sql_code_body)
-
+    
     return sql_code_base + sql_code_body
 
 host = 'localhost'
@@ -108,58 +120,80 @@ database_name = 'newdb'
 sql_code_body = """
 
 
--- Create Users table
-CREATE TABLE Users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Create the database
+CREATE DATABASE CarIndustryDB;
+
+-- Switch to the new database
+USE CarIndustryDB;
+
+-- Create the Manufacturers table
+CREATE TABLE Manufacturers (
+    ManufacturerID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Country VARCHAR(255) NOT NULL,
+    FoundedYear INT
 );
 
--- Create Posts table
-CREATE TABLE Posts (
-    post_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+-- Create the Models table
+CREATE TABLE Models (
+    ModelID INT AUTO_INCREMENT PRIMARY KEY,
+    ManufacturerID INT NOT NULL,
+    Name VARCHAR(255) NOT NULL,
+    Year INT NOT NULL,
+    FOREIGN KEY (ManufacturerID) REFERENCES Manufacturers(ManufacturerID)
 );
 
--- Create Comments table
-CREATE TABLE Comments (
-    comment_id INT AUTO_INCREMENT PRIMARY KEY,
-    post_id INT NOT NULL,
-    user_id INT NOT NULL,
-    comment TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES Posts(post_id),
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+-- Create the Dealerships table
+CREATE TABLE Dealerships (
+    DealershipID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL,
+    Location VARCHAR(255) NOT NULL,
+    ContactNumber VARCHAR(20)
 );
 
--- Create Categories table
-CREATE TABLE Categories (
-    category_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE
+-- Create the Cars table
+CREATE TABLE Cars (
+    CarID INT AUTO_INCREMENT PRIMARY KEY,
+    ModelID INT NOT NULL,
+    DealershipID INT NOT NULL,
+    VIN VARCHAR(17) NOT NULL UNIQUE,
+    Price DECIMAL(10, 2) NOT NULL,
+    Status ENUM('Available', 'Sold', 'Servicing') NOT NULL,
+    FOREIGN KEY (ModelID) REFERENCES Models(ModelID),
+    FOREIGN KEY (DealershipID) REFERENCES Dealerships(DealershipID)
 );
 
--- Create PostCategories table (many-to-many relationship between Posts and Categories)
-CREATE TABLE PostCategories (
-    post_id INT NOT NULL,
-    category_id INT NOT NULL,
-    PRIMARY KEY (post_id, category_id),
-    FOREIGN KEY (post_id) REFERENCES Posts(post_id),
-    FOREIGN KEY (category_id) REFERENCES Categories(category_id)
+-- Create the Customers table
+CREATE TABLE Customers (
+    CustomerID INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(255) NOT NULL,
+    LastName VARCHAR(255) NOT NULL,
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    PhoneNumber VARCHAR(20),
+    Address TEXT
 );
 
--- Create Tags table
-CREATE TABLE Tags (
-    tag_id INT AUTO_INCREMENT PRIMARY KEY,
-    post_id INT NOT NULL,
-    tag_name VARCHAR(50) NOT NULL,
-    FOREIGN KEY (post_id) REFERENCES Posts(post_id)
+-- Create the Sales table
+CREATE TABLE Sales (
+    SaleID INT AUTO_INCREMENT PRIMARY KEY,
+    CarID INT NOT NULL,
+    CustomerID INT NOT NULL,
+    SaleDate DATE NOT NULL,
+    SalePrice DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (CarID) REFERENCES Cars(CarID),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
 );
+
+-- Create the ServiceRecords table
+CREATE TABLE ServiceRecords (
+    ServiceID INT AUTO_INCREMENT PRIMARY KEY,
+    CarID INT NOT NULL,
+    ServiceDate DATE NOT NULL,
+    Description TEXT NOT NULL,
+    Cost DECIMAL(10, 2),
+    FOREIGN KEY (CarID) REFERENCES Cars(CarID)
+);
+
 """
 
 def main(host, user, password, database_name, sql_code_body):
