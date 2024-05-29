@@ -9,7 +9,7 @@ import server
 
 if __name__ == "__main__":
     server.start_server()
-def create_database(host, user, password, database_name, sql_code): 
+def create_database(host, user, password, database_name, sql_code: str): 
     """ 
     Creates database. 
  
@@ -31,7 +31,7 @@ def create_database(host, user, password, database_name, sql_code):
      
     if connection.is_connected(): 
         cursor = connection.cursor() 
- 
+        print(type(sql_code))
         #create db 
         cursor.execute(f"DROP DATABASE IF EXISTS {database_name}") 
         cursor.execute(f"CREATE DATABASE {database_name}") 
@@ -103,17 +103,11 @@ def format_sql_code(database_name, sql_code_body):
     Returns: 
         Str: Formated sql code. 
     """ 
-    sql_code_base = f""" 
-    """ 
-    #sql_code_base = f""" 
-    #DROP DATABASE IF EXISTS {database_name}; 
-    #CREATE DATABASE IF NOT EXISTS {database_name};     
-    #""" 
- 
-    sql_code_body = [line for line in sql_code_body.strip().split('\n') if not line.strip().startswith(("CREATE DATABASE", "USE"))] 
-    sql_code_body = '\n'.join(sql_code_body) 
+    if any(line.strip().startswith(("CREATE DATABASE", "USE")) for line in sql_code_body.strip().split('\n')): 
+        sql_code_body = [line for line in sql_code_body.strip().split('\n') if not line.strip().startswith(("CREATE DATABASE", "USE"))] 
+        sql_code_body = '\n'.join(sql_code_body) 
      
-    return sql_code_base + sql_code_body 
+    return sql_code_body
  
 host = 'localhost' 
 user = 'root' 
@@ -123,11 +117,6 @@ database_name = 'newdb'
 sql_code_body = """ 
  
  
--- Create the database 
-CREATE DATABASE CarIndustryDB; 
- 
--- Switch to the new database 
-USE CarIndustryDB; 
  
 -- Create the Manufacturers table 
 CREATE TABLE Manufacturers ( 
@@ -199,9 +188,10 @@ CREATE TABLE ServiceRecords (
  
 """ 
  
-def main(host, user, password, database_name, sql_code_body): 
+def main(host, user, password, database_name, sql_code_body: str): 
     #db creation 
-    sql_code = format_sql_code(database_name, sql_code_body) 
+    sql_code = sql_code_body#= format_sql_code(database_name, sql_code_body)
+    print(type(sql_code_body))
     create_database(host, user, password, database_name, sql_code) 
  
     #get db info + format into json 

@@ -2,19 +2,20 @@ from flask import Flask, request, jsonify, send_from_directory
 from pydanticModels import process_models
 from apiCreator import create_api
 import os
-from main import get_database_info, host, user, password, database_name, main
+from main import get_database_info, host, user, password, database_name, main, create_database
 
 app = Flask(__name__)
 
 @app.route('/sql_code', methods=['POST'])
 def sql_code():
-    data = request.json
-    if data is None:
+    given_sql_code = request.json.sql_code
+    print(given_sql_code)
+    if given_sql_code is None:
         return jsonify({"error": "No JSON data provided"}), 400
 
     # Creating API
     try:
-        create_api(data)
+        create_api(given_sql_code)
     except:
         print("Error while creating API happened")
     api = ""
@@ -29,13 +30,17 @@ def sql_code():
     
     # Database info
     print("OCHKO 1")
-    main(host, user, password, database_name, data)
+    if isinstance(given_sql_code, str):
+        print('sdds')
+    else:
+        print('eqweqwe')
+    main(host, user, password, database_name, given_sql_code) 
     print("OCHKO 2")
     db_info = get_database_info(host, user, password, database_name)
     print(db_info)
 
     # Return a JSON response
-    return jsonify({"sql_code": data, "api": api, "db_info": db_info}), 200
+    return jsonify({"sql_code": given_sql_code, "api": api, "db_info": db_info}), 200
 
 @app.route('/', methods=['GET'])
 def default_endpoint():
