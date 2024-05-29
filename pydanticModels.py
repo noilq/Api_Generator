@@ -40,7 +40,7 @@ from decimal import Decimal\n"""
         elif "bit" in mysql_type:
             return "int"
         elif "date" in mysql_type:
-            return "date"
+            return "datetime"
         elif "time" in mysql_type:
             return "time"
         elif "datetime" in mysql_type:
