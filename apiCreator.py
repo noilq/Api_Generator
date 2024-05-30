@@ -10,18 +10,18 @@ def create_api(pydantic_script, database_name):
 
     Arguments:
         `pydantic_script` (str): Models script name.
-    Returns: 
+    Returns:    
         (str): Name of created api script.
     """
     models = load_pydantic_models(pydantic_script)
-
     models_names = ", ".join([model.__name__ for model in models])
 
+    converted_pydantic_script_string = pydantic_script.replace("\\", ".")
     #import
     script = """from fastapi import FastAPI, HTTPException\n"""
     script += """from datetime import datetime, timedelta\n"""
     script += """from decimal import Decimal\n"""
-    script += f"""from {pydantic_script[:-3]} import {models_names}\n"""
+    script += f"""from {converted_pydantic_script_string[:-3]} import {models_names}\n"""
     script += """import mysql.connector\napp = FastAPI()\n\n"""
     #db params
     script += """db_config = {\n"""
