@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException #type: ignore
 import importlib.util
 from typing import List
 
-def create_api(pydantic_script):
+def create_api(pydantic_script, database_name):
     """
     Creates crud_api.py script with all CRUD methods
 
@@ -52,7 +52,7 @@ def create_api(pydantic_script):
         script += delete(model)
     
     #write into new script
-    api_script_name = "crud_api.py"
+    api_script_name = database_name + "crud_api.py"
 
     with open(api_script_name, "w") as file:
         file.write(script)

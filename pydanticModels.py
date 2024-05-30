@@ -70,7 +70,7 @@ from decimal import Decimal\n"""
         elif "longtext" in mysql_type:
             return "str"
         else:
-            raise Exception("Add later")
+            return "str #Type 'str' returned automatically because this type is not handled"
         
 
 

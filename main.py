@@ -5,6 +5,7 @@ import time
 import json
 from pydanticModels import process_models
 from apiCreator import create_api
+import os
 
 def create_database(host, user, password, database_name, sql_code):
     """
@@ -73,26 +74,26 @@ def get_database_info(host, user, password, database_name):
     
     cursor = connection.cursor()
     
+    #get all tables
     cursor.execute("SHOW TABLES")
     tables = cursor.fetchall()
     table_count = len(tables)
     table_descriptions = {}
     
     for (table_name,) in tables:
+        #add IsActive column to tables
         cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN IsActive BOOLEAN DEFAULT TRUE")
 
+        #get info about table
         cursor.execute(f"DESCRIBE {table_name}")
         description = cursor.fetchall()
         table_descriptions[table_name] = description
-
-        #cursor.execute()
 
     cursor.close()
     connection.close()
 
     return table_descriptions, table_count
 
-    #get info about db
 
 def format_sql_code(database_name, sql_code_body):
     """
@@ -200,44 +201,6 @@ def main(host, user, password, database_name, sql_code_body):
     #print(db_info_json)
 
     pydantic_script = process_models(db_info_json, database_name)
-
-    enpoints_script = create_api(pydantic_script)
+    enpoints_script = create_api(pydantic_script, database_name)
 
 main(host, user, password, database_name, sql_code_body)
-
-
-
-
-import re
-
-def process_sql_code(sql_code): 
-    table_names = re.findall(r'CREATE TABLE (\w+)', sql_code) 
-     
-    foreign_keys = {} 
-    primary_keys = {} 
-     
-    for table in table_names: 
-        foreign_keys[table] = [] 
-        primary_keys[table] = None 
-        for match in re.findall(r'FOREIGN KEY \((\w+)\) REFERENCES (\w+)\((\w+)\)', sql_code): 
-            if match[1] == table: 
-                foreign_keys[table].append((match[0], match[2])) 
-            if match[2] == 'ID': 
-                primary_keys[match[1]] = match[2] 
-     
-    join_queries = [] 
-    for table in table_names: 
-        join_query = f'{table}' 
-        for fk_table, pk_column in foreign_keys[table]: 
-            join_query += f' JOIN {fk_table} ON {table}.{fk_table} = {fk_table}.{pk_column}' 
-        join_queries.append(join_query) 
-     
-    select_query = ', '.join([f'{table}.*' for table in table_names]) 
-     
-    view_query = f'CREATE VIEW CarSalesView AS SELECT {select_query} FROM ' 
-    view_query += ' JOIN '.join(join_queries) 
-     
-    return view_query
-
-
-#print(process_sql_code(sql_code_body))
