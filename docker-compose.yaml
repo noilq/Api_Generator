@@ -3,15 +3,25 @@ version: '3'
 services:
   mariadb:
     image: mariadb
+    container_name: mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: example
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: {сюда}
     ports:
-      - "3307:3306"
+      - "{сюда}:3306"
+    volumes:
+      - ./mariadb_data{сюда}:/var/lib/mysql
+      - ./sql{сюда}:/docker-entrypoint-initdb.d
+
 
   fastapi:
-    build: .
+    build:
+      context: ./fastapi{сюда}
+      dockerfile: Dockerfile
+    container_name: fastapi
+    restart: always
     ports:
-      - "8000:8000"
+      - "{сюда}:8000"
     depends_on:
       - mariadb

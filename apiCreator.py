@@ -21,7 +21,9 @@ def create_api(pydantic_script, database_name):
     script = """from fastapi import FastAPI, HTTPException\n"""
     script += """from datetime import datetime, timedelta\n"""
     script += """from decimal import Decimal\n"""
-    script += f"""from {converted_pydantic_script_string[:-3]} import {models_names}\n"""
+    #use this if you wanna start api script directly from this folder
+    #script += f"""from {converted_pydantic_script_string[:-3]} import {models_names}\n"""
+    script += f"""from pydantic_models import {models_names}\n"""
     script += """import mysql.connector\napp = FastAPI()\n\n"""
     #db params
     script += """db_config = {\n"""

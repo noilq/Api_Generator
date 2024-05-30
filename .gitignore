@@ -1,5 +1,9 @@
 crud_api/
 pydantic_models/
+fastapi*/
+docker-compose*
+sql*/
+mariadb_data*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
