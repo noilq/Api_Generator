@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main page</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Link to Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Link to your custom style.css file -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Additional Custom Styles */
+        .form-container {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .header {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .info-block {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <form action="" method="post" class="col-sm-6 col-md-4 col-lg-4 col-xl-3 form-container">
+                <div class="form-group">
+                    <label for="sql_file">Your SQL file here:</label>
+                    <input type="file" name="sql_file" id="sql_file" class="form-control-file" value="File...">
+                </div>
+                <input type="submit" value="Send SQL file" class="btn btn-primary">
+            </form>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col container-sm-6 container-md-6 container-lg-6 container-xl-6">
+                    <div class="info-block">
+                        <h3 class="header">Database info</h3>
+                        <p id="db_info"></p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="info-block">
+                        <h3 class="header">API block</h3>
+                        <pre id="api_code"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    </div>
+    <!-- Link to your custom JavaScript file -->
+    <script src="index.js"></script>
+</body>
+</html>
