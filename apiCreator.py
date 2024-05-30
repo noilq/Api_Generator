@@ -29,7 +29,7 @@ def create_api(pydantic_script, database_name):
     script += """db_config = {\n"""
     script += """\t'host': 'localhost',\n"""
     script += """\t'user': 'root',\n"""
-    script += """\t'password': '',\n"""
+    script += """\t'password': 'root',\n"""
     script += """\t'database': 'newdb'\n}\n\n"""
     #sql query function
     script += """def execute_query(query, params=None):\n"""
@@ -141,7 +141,7 @@ def create(model):
     string += f"""\t\tparams = ({', '.join(variables_names)})\n"""
     string += """\t\texecute_query(query, params)\n\n"""
     string += f"""\t\treturn {{'message': '{model.__name__} successfully created'}}\n\n"""
-    string += """\texcept mysql.connectore.Error as e:\n"""
+    string += """\texcept mysql.connector.Error as e:\n"""
     string += """\t\traise HTTPException(status_code=500, detail=str(e))\n\n"""
 
     return string

@@ -243,7 +243,7 @@ def main(host, user, password, database_name, sql_code_body: str):
 
     return enpoints_script
 
-async def start_api_on_port(database_name, sql_code, api_script, api_port, mariadb_port, count):
+def start_api_on_port(database_name, sql_code, api_script, api_port, mariadb_port, count):
     """
     Start API on a specified port.
 
@@ -288,6 +288,25 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]""")
     #Create main.py file in fastapiN folder, copy everything from generated crud_api.py script
     shutil.copy(api_script, os.path.join(fastapi_folder, "main.py"))
 
+    #Test
+    api_script_dest = os.path.join(fastapi_folder, "main.py")
+    shutil.copy(api_script, api_script_dest)
+    with open(api_script_dest, "r") as main_file:
+        lines = main_file.readlines()
+
+    with open(api_script_dest, "w") as main_file:
+        for line in lines:
+            line = line.replace("localhost", f"mariadb{count}")
+            main_file.write(line)
+
+    with open(api_script_dest, "a") as main_file:
+        main_file.write("""
+if __name__ == "__main__":
+    import uvicorn
+    from main import app
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+""")
+
     #Create pydantic_models file in fastapiN folder, copy everything from generated pydantic_models
     pydantic_models_source = f"pydantic_models/{database_name}_pydantic_models.py"
     pydantic_models_dest = os.path.join(fastapi_folder, "pydantic_models.py")
@@ -311,7 +330,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]""")
 services:
   mariadb:
     image: mariadb
-    container_name: mariadb
+    container_name: mariadb{count}
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -326,7 +345,7 @@ services:
     build:
       context: ./{fastapi_folder}
       dockerfile: Dockerfile
-    container_name: fastapi
+    container_name: fastapi{count}
     restart: always
     ports:
       - "{api_port}:8000"
@@ -337,12 +356,12 @@ services:
     print(f"Setup on port api:{api_port} db:{mariadb_port} completed successfully.")
 
     #Init docker file
-    command = ['docker-compose', '-f', f'docker-compose{count}.yaml', 'up', '--build']
-    await asyncio.create_subprocess_exec(*command)
+    command = ['docker-compose', '-f', f'docker-compose{count}.yaml', '-p', f'apigenerator{count}', 'up', '--build']
+    subprocess.run(command, check=True)
 
-    return f"http://localhost:{api_port}/docs"
+    #return f"http://localhost:{api_port}/docs"
 
 #main(host, user, password, database_name, sql_code_body)
-#asyncio.run(start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8001, 3311, 1))
-#asyncio.run(start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8002, 3312, 2))
-#asyncio.run(start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8003, 3313, 3))
+start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8001, 3311, 1)
+#start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8002, 3312, 2)
+#start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8003, 3313, 3)
