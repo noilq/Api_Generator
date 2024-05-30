@@ -228,6 +228,7 @@ def main(host, user, password, database_name, sql_code_body: str):
     create_database(host, user, password, database_name, sql_code) 
  
     #get db info + format into json 
+
     format_database(host, user, password, database_name)
     db_info, depth = get_database_info(host, user, password, database_name) 
     db_info_json = json.dumps(db_info, indent=depth) 
