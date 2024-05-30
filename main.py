@@ -7,8 +7,8 @@ from pydanticModels import process_models
 from apiCreator import create_api
 import server
 
-if __name__ == "__main__":
-    server.start_server()
+#if __name__ == "__main__":
+    #server.start_server()
 def create_database(host, user, password, database_name, sql_code: str): 
     """ 
     Creates database. 
@@ -31,7 +31,7 @@ def create_database(host, user, password, database_name, sql_code: str):
      
     if connection.is_connected(): 
         cursor = connection.cursor() 
-        print(type(sql_code))
+        #print(type(sql_code))
         #create db 
         cursor.execute(f"DROP DATABASE IF EXISTS {database_name}") 
         cursor.execute(f"CREATE DATABASE {database_name}") 
@@ -53,77 +53,77 @@ def create_database(host, user, password, database_name, sql_code: str):
         print('Unable to connect to db.') 
         return 0 
  
-def get_database_info(host, user, password, database_name):  
-    """  
-    Returns information about all tables in database.  
-  
-    Arguments:  
-        host (str): Db host.  
-        user (str): Db user.  
-        password (str): User password.  
-        database_name (str): Database name.  
-    Return:  
-        Dics/List: List of strings with database descriptions.  
-        Int: Count of tables.  
-    """  
-    time.sleep(0.1)  
-    connection = mysql.connector.connect(  
-        host=host,  
-        user=user,  
-        password=password,  
-        database=database_name    
-    )  
-      
-    cursor = connection.cursor()  
-      
-    cursor.execute("SHOW TABLES")  
-    tables = cursor.fetchall()  
-    table_count = len(tables)  
-    table_descriptions = {}  
-      
-    for (table_name,) in tables: 
-        #get info about table 
-        cursor.execute(f"DESCRIBE {table_name}") 
-        description = cursor.fetchall() 
-        table_descriptions[table_name] = description 
-  
-    cursor.close()  
-    connection.close()  
-  
-    return table_descriptions, table_count  
-
-def format_database(host, user, password, database_name):  
-    """  
-    Adds into db IsActive column.  
-  
-    Arguments:  
-        host (str): Db host.  
-        user (str): Db user.  
-        password (str): User password.  
-        database_name (str): Database name.  
-    """  
-    time.sleep(0.1)  
-    connection = mysql.connector.connect(  
-        host=host,  
-        user=user,  
-        password=password,  
-        database=database_name    
-    )  
-      
-    cursor = connection.cursor()  
-      
-    cursor.execute("SHOW TABLES")  
-    tables = cursor.fetchall()  
-    table_count = len(tables)  
-    table_descriptions = {}  
-      
-    for (table_name,) in tables: 
-        #add IsActive column to tables 
-        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN IsActive BOOLEAN DEFAULT TRUE") 
-  
-    cursor.close()  
-    connection.close()  
-  
+def get_database_info(host, user, password, database_name): 
+    """ 
+    Returns information about all tables in database. 
+ 
+    Arguments: 
+        host (str): Db host. 
+        user (str): Db user. 
+        password (str): User password. 
+        database_name (str): Database name. 
+    Return: 
+        Dics/List: List of strings with database descriptions. 
+        Int: Count of tables. 
+    """ 
+    time.sleep(0.1) 
+    connection = mysql.connector.connect( 
+        host=host, 
+        user=user, 
+        password=password, 
+        database=database_name   
+    ) 
+     
+    cursor = connection.cursor() 
+     
+    cursor.execute("SHOW TABLES") 
+    tables = cursor.fetchall() 
+    table_count = len(tables) 
+    table_descriptions = {} 
+     
+    for (table_name,) in tables:
+        #get info about table
+        cursor.execute(f"DESCRIBE {table_name}")
+        description = cursor.fetchall()
+        table_descriptions[table_name] = description
+ 
+    cursor.close() 
+    connection.close() 
+ 
+    return table_descriptions, table_count 
+ 
+def format_database(host, user, password, database_name): 
+    """ 
+    Adds into db IsActive column. 
+ 
+    Arguments: 
+        host (str): Db host. 
+        user (str): Db user. 
+        password (str): User password. 
+        database_name (str): Database name. 
+    """ 
+    time.sleep(0.1) 
+    connection = mysql.connector.connect( 
+        host=host, 
+        user=user, 
+        password=password, 
+        database=database_name   
+    ) 
+     
+    cursor = connection.cursor() 
+     
+    cursor.execute("SHOW TABLES") 
+    tables = cursor.fetchall() 
+    table_count = len(tables) 
+    table_descriptions = {} 
+     
+    for (table_name,) in tables:
+        #add IsActive column to tables
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN IsActive BOOLEAN DEFAULT TRUE")
+ 
+    cursor.close() 
+    connection.close() 
+ 
     return
  
 def format_sql_code(database_name, sql_code_body): 
@@ -224,15 +224,17 @@ CREATE TABLE ServiceRecords (
 def main(host, user, password, database_name, sql_code_body: str): 
     #db creation 
     sql_code = sql_code_body#= format_sql_code(database_name, sql_code_body)
-    print(type(sql_code_body))
+    
     create_database(host, user, password, database_name, sql_code) 
  
     #get db info + format into json 
-    format_database(host, user, password, database_name) 
-    db_info, depth = get_database_info(host, user, password, database_name)  
-    db_info_json = json.dumps(db_info, indent=depth)
+
+    format_database(host, user, password, database_name)
+    db_info, depth = get_database_info(host, user, password, database_name) 
+    db_info_json = json.dumps(db_info, indent=depth) 
     #print(db_info_json) 
  
-    pydantic_script = process_models(db_info_json, database_name) 
- 
-    enpoints_script = create_api(pydantic_script, database_name) 
+    pydantic_script = process_models(db_info_json, database_name)
+    enpoints_script = create_api(pydantic_script, database_name)
+
+main(host, user, password, database_name, sql_code_body)
