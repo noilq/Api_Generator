@@ -27,43 +27,29 @@ def sql_code():
     given_data = request.json
     given_sql_code = given_data['sql_code']
     given_db_name = given_data['db_name']
-
-    print("OCHKO 1_")
-    print(given_sql_code)
-    print("OCHKO 2_")
+    main(host, user, password, given_db_name, given_sql_code)
 
     if given_sql_code is None:
         return jsonify({"error": "No JSON data provided"}), 400
 
-    # Creating API
-    try:
-        create_api(given_sql_code)
-    except:
-        print("Error while creating API happened")
-    api = ""
     # Get the directory of the current file
-    current_directory = os.path.dirname(__file__)
+    directory = "crud_api"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    api_file_path = os.path.join(directory, f"{given_db_name}_crud_api.py")
     # Join the directory path with the filename
-    api_file_path = os.path.join(current_directory, 'crud_api.py')
     print(api_file_path)
     with open(api_file_path) as file:
         # Read the entire content of the file crud_api.py
         api = file.read()
     
     # Database info
-    print("OCHKO 1")
-    if isinstance(given_sql_code, str):
-        print('sdds')
-    else:
-        print('eqweqwe')
-    main(host, user, password, given_db_name, given_sql_code)
-    print("OCHKO 2")
     db_info = get_database_info(host, user, password, given_db_name)
     print(db_info)
 
     # Return a JSON response
     return jsonify({"sql_code": given_sql_code, "api": api, "db_info": db_info}), 200
-    #return jsonify({"sql_code": given_sql_code, "api": api, "db_info": list_to_string(db_info[0])}), 200
 
 @app.route('/', methods=['GET'])
 def default_endpoint():

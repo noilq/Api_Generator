@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field #type: ignore
 import json
 import re
+import os
 
 def process_models(json_data, database_name):
     script =  f"""from pydantic import BaseModel, Field
@@ -94,8 +95,12 @@ from decimal import Decimal\n"""
         script += ''.join(other_fields)
         script += "\n"
     
-    script_name = database_name + "_pydantic_models.py"
-
+    directory = "pydantic_models"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    script_name = os.path.join(directory, f"{database_name}_pydantic_models.py")
+    
     with open(script_name, "w") as file:
         file.write(script)
 

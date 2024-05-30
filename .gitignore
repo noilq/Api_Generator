@@ -1,6 +1,5 @@
-/newdb_pydantic_models.py
-/newdb_crud_api.py
-/crud_api.py
+crud_api/
+pydantic_models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

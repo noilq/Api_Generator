@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field #type: ignore
 from fastapi import FastAPI, HTTPException #type: ignore
 import importlib.util
 from typing import List
+import os 
 
 def create_api(pydantic_script, database_name):
     """
@@ -52,7 +53,11 @@ def create_api(pydantic_script, database_name):
         script += delete(model)
     
     #write into new script
-    api_script_name = database_name + "crud_api.py"
+    directory = "crud_api"
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    api_script_name = os.path.join(directory, f"{database_name}_crud_api.py")
 
     with open(api_script_name, "w") as file:
         file.write(script)
