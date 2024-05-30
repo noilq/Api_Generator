@@ -33,7 +33,7 @@ $(document).ready(function() {
             url: path,
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ sql_code: sqlCode }),
+            data: JSON.stringify({ sql_code: sqlCode, db_name: $("#db_name").val() }),
             success: function(response) {
                 console.log("File sent successfully");
                 console.log(response);

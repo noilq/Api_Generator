@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from datetime import datetime, timedelta
 from decimal import Decimal
-from newdb_pydantic_models import categories, comments, postcategories, posts, tags, users
+from BoSinnnnn_pydantic_models import categories, comments, postcategories, posts, tags, users
 import mysql.connector
 app = FastAPI()
 

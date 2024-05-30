@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from pydanticModels import process_models
 from apiCreator import create_api
 import os
-from main import get_database_info, host, user, password, database_name, main, create_database
+from main import get_database_info, host, user, password, main, create_database
 
 app = Flask(__name__)
 
@@ -24,8 +24,9 @@ def list_to_string(items):
 
 @app.route('/sql_code', methods=['POST'])
 def sql_code():
-    given_sql_code_ = request.json
-    given_sql_code = given_sql_code_['sql_code']
+    given_data = request.json
+    given_sql_code = given_data['sql_code']
+    given_db_name = given_data['db_name']
 
     print("OCHKO 1_")
     print(given_sql_code)
@@ -55,9 +56,9 @@ def sql_code():
         print('sdds')
     else:
         print('eqweqwe')
-    main(host, user, password, database_name, given_sql_code) 
+    main(host, user, password, given_db_name, given_sql_code)
     print("OCHKO 2")
-    db_info = get_database_info(host, user, password, database_name)
+    db_info = get_database_info(host, user, password, given_db_name)
     print(db_info)
 
     # Return a JSON response
