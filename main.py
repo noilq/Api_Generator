@@ -82,9 +82,6 @@ def get_database_info(host, user, password, database_name):
     table_descriptions = {} 
      
     for (table_name,) in tables:
-        #add IsActive column to tables
-        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN IsActive BOOLEAN DEFAULT TRUE")
-
         #get info about table
         cursor.execute(f"DESCRIBE {table_name}")
         description = cursor.fetchall()
@@ -95,7 +92,39 @@ def get_database_info(host, user, password, database_name):
  
     return table_descriptions, table_count 
  
-    #get info about db 
+def format_database(host, user, password, database_name): 
+    """ 
+    Adds into db IsActive column. 
+ 
+    Arguments: 
+        host (str): Db host. 
+        user (str): Db user. 
+        password (str): User password. 
+        database_name (str): Database name. 
+    """ 
+    time.sleep(0.1) 
+    connection = mysql.connector.connect( 
+        host=host, 
+        user=user, 
+        password=password, 
+        database=database_name   
+    ) 
+     
+    cursor = connection.cursor() 
+     
+    cursor.execute("SHOW TABLES") 
+    tables = cursor.fetchall() 
+    table_count = len(tables) 
+    table_descriptions = {} 
+     
+    for (table_name,) in tables:
+        #add IsActive column to tables
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN IsActive BOOLEAN DEFAULT TRUE")
+ 
+    cursor.close() 
+    connection.close() 
+ 
+    return
  
 def format_sql_code(database_name, sql_code_body): 
     """ 
@@ -199,6 +228,7 @@ def main(host, user, password, database_name, sql_code_body: str):
     create_database(host, user, password, database_name, sql_code) 
  
     #get db info + format into json 
+    format_database(host, user, password, database_name)
     db_info, depth = get_database_info(host, user, password, database_name) 
     db_info_json = json.dumps(db_info, indent=depth) 
     #print(db_info_json) 
