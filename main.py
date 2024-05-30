@@ -7,8 +7,8 @@ from pydanticModels import process_models
 from apiCreator import create_api
 import server
 
-if __name__ == "__main__":
-    server.start_server()
+#if __name__ == "__main__":
+    #server.start_server()
 def create_database(host, user, password, database_name, sql_code: str): 
     """ 
     Creates database. 
@@ -31,7 +31,7 @@ def create_database(host, user, password, database_name, sql_code: str):
      
     if connection.is_connected(): 
         cursor = connection.cursor() 
-        print(type(sql_code))
+        #print(type(sql_code))
         #create db 
         cursor.execute(f"DROP DATABASE IF EXISTS {database_name}") 
         cursor.execute(f"CREATE DATABASE {database_name}") 
@@ -224,7 +224,7 @@ CREATE TABLE ServiceRecords (
 def main(host, user, password, database_name, sql_code_body: str): 
     #db creation 
     sql_code = sql_code_body#= format_sql_code(database_name, sql_code_body)
-    print(type(sql_code_body))
+    
     create_database(host, user, password, database_name, sql_code) 
  
     #get db info + format into json 
