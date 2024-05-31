@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from pydanticModels import process_models
 from apiCreator import create_api
 import os
-from main import get_database_info, host, user, password, main, create_database
+from main import get_database_info, host, user, password, main, create_database, start_api_on_port
 
 app = Flask(__name__)
 
@@ -27,6 +27,7 @@ def sql_code():
     given_data = request.json
     given_sql_code = given_data['sql_code']
     given_db_name = given_data['db_name']
+    given_counter = given_data['counter']
     main(host, user, password, given_db_name, given_sql_code)
 
     if given_sql_code is None:
@@ -48,8 +49,13 @@ def sql_code():
     db_info = get_database_info(host, user, password, given_db_name)
     print(db_info)
 
+    # START API
+    api_port = 8000 + given_counter
+    db_port = 3010 + given_counter
+    start_api_on_port(given_db_name, given_sql_code, api_file_path, api_port, db_port, 1)
+    
     # Return a JSON response
-    return jsonify({"sql_code": given_sql_code, "api": api, "db_info": db_info}), 200
+    return jsonify({"sql_code": given_sql_code, "api": api, "db_info": db_info, "page": f"http://localhost:{api_port}/docs"}), 200
 
 @app.route('/', methods=['GET'])
 def default_endpoint():

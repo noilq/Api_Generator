@@ -11,8 +11,8 @@ import os
 import shutil
 import asyncio
 
-#if __name__ == "__main__":
-    #server.start_server()
+if __name__ == "__main__":
+    server.start_server()
 def create_database(host, user, password, database_name, sql_code: str): 
     """ 
     Creates database. 
@@ -359,11 +359,13 @@ services:
 
     #Init docker file
     command = ['docker-compose', '-f', f'docker-compose{count}.yaml', '-p', f'apigenerator{count}', 'up', '--build']
-    subprocess.run(command, check=True)
+    #subprocess.run(command, check=True)
+    subprocess.Popen(command)
 
-    #return f"http://localhost:{api_port}/docs"
-
+    return f"http://localhost:{api_port}/docs"
+'''
 main(host, user, password, database_name, sql_code_body)
 start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8001, 3311, 1)
 #start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8002, 3312, 2)
 #start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8003, 3313, 3)
+'''
