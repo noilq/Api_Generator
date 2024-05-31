@@ -133,7 +133,8 @@ def create(model):
     #SQL query
     string += """\n"""
     string += """\ttry:\n"""
-    string += f"""\t\t{'\n\t\t'.join(variables_formated)}\n"""
+    fromated = '\n\t\t'.join(variables_formated)
+    string += f"""\t\t{fromated}\n"""
     string += """\t\tquery = '''\n"""
     string += f"""\t\tINSERT INTO {model.__name__} ({', '.join(variables_names)})\n"""
     string += f"""\t\tVALUES ({', '.join(['%s'] * len(variables_names))})\n"""
