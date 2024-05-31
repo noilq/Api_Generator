@@ -30,7 +30,8 @@ def create_api(pydantic_script, database_name):
     script += """\t'host': 'localhost',\n"""
     script += """\t'user': 'root',\n"""
     script += """\t'password': 'root',\n"""
-    script += """\t'database': 'newdb'\n}\n\n"""
+    script += f"""\t'database': '{database_name}'\n"""
+    script += """}\n\n"""
     #sql query function
     script += """def execute_query(query, params=None):\n"""
     script += """\ttry:\n"""

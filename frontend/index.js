@@ -1,7 +1,9 @@
 $(document).ready(function() {
     var form = $("form");
     var api_code_text = $("#api_code");
+    var api_block_text = $("#api_block");
     var db_info_text = $("#db_info");
+    var counter = 1;
 
     form.on("submit", function(event) {
         event.preventDefault();
@@ -33,12 +35,14 @@ $(document).ready(function() {
             url: path,
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ sql_code: sqlCode, db_name: $("#db_name").val() }),
+            data: JSON.stringify({ sql_code: sqlCode, db_name: $("#db_name").val(), "counter": counter }),
             success: function(response) {
                 console.log("File sent successfully");
                 console.log(response);
                 console.log(response.sql_code);
-                api_code_text.text(response.api);
+                console.log(response.page);
+                api_block_text.append(api_block_text.text() + "\n" + `<a href='${response.page}'>` +  response.page + '</a>');
+                api_code_text.text(api_code_text.text() + "\n" + response.api);
                 var db_info_ = "";
                 var tables_names = Object.keys(response.db_info[0]);
                 var tables_data= Object.values(response.db_info[0]);
@@ -53,6 +57,7 @@ $(document).ready(function() {
                 db_info_text.append(`<h4>Tables count: ${response.db_info[1]}</h4>`);
                 db_info_text.append(db_info_);
                 console.log(response.db_info);
+                counter++;
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error("Error sending file:", textStatus, errorThrown);
