@@ -328,20 +328,22 @@ if __name__ == "__main__":
         f.write(f"""version: '3'
 
 services:
-  mariadb:
+  mariadb{count}:
     image: mariadb
     container_name: mariadb{count}
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: {database_name}
+      MYSQL_USER: gooner
+      MYSQL_PASSWORD: brainrot 
     ports:
       - "{mariadb_port}:3306"
     volumes:
       - ./mariadb_data{count}:/var/lib/mysql
       - ./sql{count}:/docker-entrypoint-initdb.d
 
-  fastapi:
+  fastapi{count}:
     build:
       context: ./{fastapi_folder}
       dockerfile: Dockerfile
@@ -350,7 +352,7 @@ services:
     ports:
       - "{api_port}:8000"
     depends_on:
-      - mariadb
+      - mariadb{count}
 """)
 
     print(f"Setup on port api:{api_port} db:{mariadb_port} completed successfully.")
@@ -361,7 +363,7 @@ services:
 
     #return f"http://localhost:{api_port}/docs"
 
-#main(host, user, password, database_name, sql_code_body)
+main(host, user, password, database_name, sql_code_body)
 start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8001, 3311, 1)
 #start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8002, 3312, 2)
 #start_api_on_port('newdb', sql_code_body, 'crud_api/newdb_crud_api.py', 8003, 3313, 3)
